@@ -1,45 +1,92 @@
-import numpy as np
+import numpy.random as random
 import matplotlib.pyplot as plt
+import numpy as np
+
+from copy import copy
+from operator import itemgetter
 
 # Parameters
 M = 100
-v0 = 0
-d = 2
 p = 0.3
-v_max = 5
+v0 = 0
+N = 10
 t_max = 1000
-density = 0.7
+v_max = 5
 
-# Initial state
-cars_num = int(density * M)
-initial = [0] * cars_num + [-1] * (M - cars_num)
-np.random.shuffle(initial)
+random.seed(1)
+roads = np.array( [ [[0,M+0.5], [0.5,0.5]], [[0,M+0.5], [1.5,1.5]] ] )
+cars = np.array([[random.randint(1,M), random.randint(1,2)] for _ in range(1,N+1)])
+cars = np.array(sorted(cars, key=itemgetter(0)))
 
-# Evolution
-iterations = [initial]
+total = []
+rev = 0
+a = 0
+v = v0
+count = 0
+movement = []
+queue_cars = [i for i in range(N)]
 
-# Iteration
-for i in range(t_max):
-    prev,curr = iterations[-1],[-1] * M
+# Main Program
+for t in range(t_max):
+    x_row = []
+    for i in queue_cars:
+        car = cars[i]
+        next_car = cars[i + 1 if i + 1 < N else 0]        
 
-    for x in range(M):
-        if prev[x] > -1:
-            vi = prev[x]
-            d = 1
-            while prev[(x + d) % M] < 0:
-                d += 1
+        v = np.min([v+1, v_max])        
 
-            vtemp = min(vi+1, d - 1, v_max)
-            v = max(vtemp - 1, 0) if np.random.uniform(0,1) < p else vtemp
-            curr[(x + v) % M] = v
-            
-    iterations.append(curr)
+        if (next_car[0] < car[0]):
+            d = M - car[0] + next_car[0]
+        else: 
+            d = (next_car[0]-car[0])
+        v = np.min([v, d-1])
+
+        pr = random.rand()
+        if (pr < p):
+            v = np.max([0, v-1])
+
+        x = copy(car[0])
+        x = x + v
+        if (x >= M):
+            x = x - M
+        x_row.append(copy([x,car[1]]))
+
+    cars = copy(x_row)
+    movement.append(cars)
+
+    # density
+    if 80 <= t <= 90:
+        print(f'x{t}')
+        
+        for j in (movement[t]):
+            if j[0] >= 80 and j[0] <= 90:
+                count += 1
+
+        print(f'{count / len(movement[t]) * 100}%')
+        count = 0
+
+# Average
+for i in range(len(movement) - 1):
+    if a >= len(movement) - 1:
+        break
+
+    a = i + 1
+    nextemp = movement[a][2]
+    temp = movement[i][2]
+
+    if nextemp[0]<temp[0]:
+        if nextemp[0] == movement[a][2][0] or nextemp[0] >= movement[a][2][0]:  
+            total.append(a)
+            rev += 1
+
+average = total[-1] / rev
+print('Time average:', average)
 
 # Plotting
-a = np.zeros(shape=(t_max,M))
-for i in range(M):
-    for j in range(t_max):
-        a[j,i] = 1 if iterations[j][i] > -1 else 0
+a = np.zeros(shape = (t_max, M)) 
+for t in range(t_max):
+    for car in movement[t]:
+        a[t, car[0]] = 1 if car[1] == 2 else 2
 
-plt.imshow(a, cmap="Greys", interpolation="nearest")
+plt.imshow(a, cmap='Greys', interpolation='nearest')
 plt.show()
