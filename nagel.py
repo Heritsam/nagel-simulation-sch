@@ -9,7 +9,7 @@ from operator import itemgetter
 M = 100
 p = 0.3
 v0 = 0
-N = 10
+N = 70
 t_max = 1000
 v_max = 5
 
