@@ -9,13 +9,13 @@ from operator import itemgetter
 M = 100
 p = 0.3
 v0 = 0
-N = 70
+n_cars = 70
 t_max = 1000
 v_max = 5
 
 random.seed(1)
 roads = np.array( [ [[0,M+0.5], [0.5,0.5]], [[0,M+0.5], [1.5,1.5]] ] )
-cars = np.array([[random.randint(1,M), random.randint(1,2)] for _ in range(1,N+1)])
+cars = np.array([[random.randint(1,M), random.randint(1,2)] for _ in range(1,n_cars+1)])
 cars = np.array(sorted(cars, key=itemgetter(0)))
 
 total = []
@@ -24,14 +24,14 @@ a = 0
 v = v0
 count = 0
 movement = []
-queue_cars = [i for i in range(N)]
+queue_cars = [i for i in range(n_cars)]
 
 # Main Program
 for t in range(t_max):
     x_row = []
     for i in queue_cars:
         car = cars[i]
-        next_car = cars[i + 1 if i + 1 < N else 0]        
+        next_car = cars[i + 1 if i + 1 < n_cars else 0]        
 
         v = np.min([v+1, v_max])        
 
@@ -56,13 +56,11 @@ for t in range(t_max):
 
     # density
     if 80 <= t <= 90:
-        print(f'x{t}')
-        
         for j in (movement[t]):
             if j[0] >= 80 and j[0] <= 90:
                 count += 1
 
-        print(f'{count / len(movement[t]) * 100}%')
+        print(f'x{t}: {count / len(movement[t]) * 100:.2f}%')
         count = 0
 
 # Average
